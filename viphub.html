@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Information Hub Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiVklQIEluZm9ybWF0aW9uIEh1YiIsInNob3J0X25hbWUiOiJWSVAgSHViIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiM0f36ZjYifQ==">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .pulse-ring {
+            animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(.33); }
+            80%, 100% { opacity: 0; }
+        }
+        .search-highlight { 
+            background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .mobile-optimized {
+            touch-action: manipulation;
+        }
+        @media (max-width: 768px) {
+            .mobile-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen mobile-optimized" x-data="vipHub()">
+    
+    <!-- PWA Install Banner -->
+    <div x-show="showInstallPrompt" x-transition class="fixed top-0 left-0 right-0 bg-indigo-600 text-white p-4 z-50">
+        <div class="flex items-center justify-between max-w-7xl mx-auto">
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                <span class="font-medium">Install VIP Hub as an app for better experience!</span>
+            </div>
+            <div class="flex space-x-2">
+                <button @click="installPWA()" class="bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                    Install
+                </button>
+                <button @click="showInstallPrompt = false" class="text-white hover:text-gray-200 p-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="glass-effect sticky top-0 z-40 border-b border-white/20" data-aos="fade-down">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-3 rounded-2xl floating-animation">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full pulse-ring"></div>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold gradient-text">Indian VIP Hub Pro</h1>
+                        <p class="text-gray-600">Comprehensive database of Indian personalities</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button @click="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <svg x-show="!darkMode" class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                        </svg>
+                        <svg x-show="darkMode" class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </button>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-500">Total Profiles</div>
+                        <div class="text-2xl font-bold text-indigo-600" x-text="vipData.length">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Advanced Search and Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <!-- Search Panel -->
+            <div class="lg:col-span-2 glass-effect rounded-2xl p-6 border border-white/20" data-aos="fade-right">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Advanced Search & Filters</h2>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" x-model="searchQuery" @input="applyFilters()" 
+                               placeholder="Search by name, profession, achievements..." 
+                               class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white/80">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <select x-model="selectedCategory" @change="applyFilters()" class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white/80">
+                            <option value="">All Categories</option>
+                            <template x-for="category in categories" :key="category">
+                                <option :value="category" x-text="category"></option>
+                            </template>
+                        </select>
+                        <select x-model="selectedStatus" @change="applyFilters()" class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white/80">
+                            <option value="">All Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Historical Figure">Historical</option>
+                        </select>
+                        <select x-model="selectedNationality" @change="applyFilters()" class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white/80">
+                            <option value="">All Countries</option>
+                            <template x-for="nationality in nationalities" :key="nationality">
+                                <option :value="nationality" x-text="nationality"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button @click="clearFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium">
+                            Clear All
+                        </button>
+                        <button @click="exportData()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium">
+                            Export Data
+                        </button>
+                        <button @click="showAnalytics = !showAnalytics" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium">
+                            <span x-text="showAnalytics ? 'Hide Analytics' : 'Show Analytics'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="glass-effect rounded-2xl p-6 border border-white/20" data-aos="fade-left">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Total Profiles</span>
+                        <span class="font-bold text-2xl text-indigo-600" x-text="vipData.length"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Active Figures</span>
+                        <span class="font-bold text-xl text-green-600" x-text="activeCount"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Categories</span>
+                        <span class="font-bold text-xl text-purple-600" x-text="categories.length"></span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Countries</span>
+                        <span class="font-bold text-xl text-blue-600" x-text="nationalities.length"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Dashboard -->
+        <div x-show="showAnalytics" x-transition class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="glass-effect rounded-2xl p-6 border border-white/20" data-aos="zoom-in">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Category Distribution</h3>
+                <canvas id="categoryChart" width="400" height="200"></canvas>
+            </div>
+            <div class="glass-effect rounded-2xl p-6 border border-white/20" data-aos="zoom-in" data-aos-delay="100">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Overview</h3>
+                <canvas id="statusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Category Overview -->
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8" data-aos="fade-up">
+            <template x-for="(count, category) in categoryStats" :key="category">
+                <div class="glass-effect rounded-xl p-4 border border-white/20 card-hover cursor-pointer" 
+                     @click="filterByCategory(category)">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2" x-text="getCategoryIcon(category)"></div>
+                        <div class="text-sm font-medium text-gray-900 mb-1" x-text="category"></div>
+                        <div class="text-xs px-2 py-1 rounded-full font-medium"
+                             :class="getCategoryColor(category)"
+                             x-text="count + ' ' + (count === 1 ? 'profile' : 'profiles')">
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Results Section -->
+        <div class="glass-effect rounded-2xl border border-white/20" data-aos="fade-up" data-aos-delay="200">
+            <div class="p-6 border-b border-gray-200/50">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-900">Indian VIP Profiles</h2>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-500">
+                            Showing <span x-text="filteredData.length" class="font-semibold"></span> of <span x-text="vipData.length" class="font-semibold"></span> profiles
+                        </div>
+                        <div class="flex space-x-2">
+                            <button @click="viewMode = 'grid'" :class="viewMode === 'grid' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'" class="p-2 rounded-lg transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                </svg>
+                            </button>
+                            <button @click="viewMode = 'list'" :class="viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600'" class="p-2 rounded-lg transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <!-- Grid View -->
+                <div x-show="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mobile-grid">
+                    <template x-for="person in filteredData" :key="person.id">
+                        <div class="glass-effect rounded-xl p-6 border border-white/20 card-hover cursor-pointer"
+                             @click="openModal(person)" data-aos="zoom-in" data-aos-delay="100">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-lg text-gray-900 mb-1" x-html="highlightText(person.name)"></h3>
+                                    <p class="text-sm text-gray-600 mb-2" x-html="highlightText(person.profession)"></p>
+                                    <span class="inline-block px-3 py-1 text-xs font-medium rounded-full"
+                                          :class="getCategoryColor(person.category)"
+                                          x-text="person.category">
+                                    </span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="w-3 h-3 rounded-full mb-1"
+                                         :class="person.status === 'Active' ? 'bg-green-400' : 'bg-gray-400'"></div>
+                                    <div class="text-xs text-gray-500" x-text="person.status"></div>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-700 mb-4 line-clamp-3" x-text="person.description"></p>
+                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                <span x-text="'Born: ' + person.birthYear"></span>
+                                <span x-text="person.nationality"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- List View -->
+                <div x-show="viewMode === 'list'" class="space-y-4">
+                    <template x-for="person in filteredData" :key="person.id">
+                        <div class="glass-effect rounded-xl p-6 border border-white/20 card-hover cursor-pointer flex items-center space-x-6"
+                             @click="openModal(person)" data-aos="fade-right" data-aos-delay="50">
+                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-bold flex-shrink-0"
+                                 x-text="person.name.split(' ').map(n => n[0]).join('')">
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-lg text-gray-900 mb-1" x-html="highlightText(person.name)"></h3>
+                                <p class="text-sm text-gray-600 mb-2" x-html="highlightText(person.profession)"></p>
+                                <p class="text-sm text-gray-700" x-text="person.description"></p>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <span class="inline-block px-3 py-1 text-xs font-medium rounded-full mb-2"
+                                      :class="getCategoryColor(person.category)"
+                                      x-text="person.category">
+                                </span>
+                                <div class="text-xs text-gray-500" x-text="person.nationality + ' • ' + person.birthYear"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- No Results -->
+                <div x-show="filteredData.length === 0" class="text-center py-12">
+                    <svg class="mx-auto w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.467-.881-6.08-2.33M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No profiles found</h3>
+                    <p class="text-gray-500">Try adjusting your search criteria or browse all categories</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Profile Modal -->
+    <div x-show="showModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" 
+         x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-200" 
+         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+         class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" @click.self="closeModal()">
+        <div class="glass-effect rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-white/20">
+            <div class="p-6 border-b border-gray-200/50 flex items-center justify-between sticky top-0 glass-effect">
+                <h3 class="text-xl font-semibold text-gray-900">Profile Details</h3>
+                <button @click="closeModal()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6" x-show="selectedPerson">
+                <template x-if="selectedPerson">
+                    <div>
+                        <!-- Profile Header -->
+                        <div class="text-center mb-8">
+                            <div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4"
+                                 x-text="selectedPerson.name.split(' ').map(n => n[0]).join('')">
+                            </div>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2" x-text="selectedPerson.name"></h2>
+                            <p class="text-xl text-gray-600 mb-3" x-text="selectedPerson.profession"></p>
+                            <div class="flex items-center justify-center space-x-4 mb-4">
+                                <span class="inline-block px-4 py-2 text-sm font-medium rounded-full"
+                                      :class="getCategoryColor(selectedPerson.category)"
+                                      x-text="selectedPerson.category">
+                                </span>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 rounded-full"
+                                         :class="selectedPerson.status === 'Active' ? 'bg-green-400' : 'bg-gray-400'"></div>
+                                    <span class="text-sm font-medium text-gray-700" x-text="selectedPerson.status"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <!-- Left Column -->
+                            <div class="space-y-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        About
+                                    </h3>
+                                    <p class="text-gray-700 leading-relaxed" x-text="selectedPerson.description"></p>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Key Achievements
+                                    </h3>
+                                    <ul class="space-y-3">
+                                        <template x-for="achievement in selectedPerson.achievements" :key="achievement">
+                                            <li class="flex items-start text-gray-700">
+                                                <svg class="w-5 h-5 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                </svg>
+                                                <span x-text="achievement"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="space-y-6">
+                                <div class="glass-effect rounded-xl p-6 border border-white/20">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                        </svg>
+                                        Personal Information
+                                    </h3>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <div class="text-sm text-gray-500 mb-1">Birth Year</div>
+                                            <div class="font-semibold text-gray-900" x-text="selectedPerson.birthYear"></div>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm text-gray-500 mb-1">Nationality</div>
+                                            <div class="font-semibold text-gray-900" x-text="selectedPerson.nationality"></div>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm text-gray-500 mb-1">Category</div>
+                                            <div class="font-semibold text-gray-900" x-text="selectedPerson.category"></div>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm text-gray-500 mb-1">Status</div>
+                                            <div class="font-semibold text-gray-900" x-text="selectedPerson.status"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="space-y-3">
+                                    <button @click="shareProfile(selectedPerson)" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                                        </svg>
+                                        Share Profile
+                                    </button>
+                                    <button @click="addToFavorites(selectedPerson)" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                        </svg>
+                                        Add to Favorites
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div x-show="showNotification" x-transition:enter="transition ease-out duration-300 transform" 
+         x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2" 
+         x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+         x-transition:leave="transition ease-in duration-100" 
+         x-transition:leave-start="opacity-100" 
+         x-transition:leave-end="opacity-0"
+         class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <p x-text="notificationMessage"></p>
+    </div>
+
+    <script>
+        // Initialize AOS (Animate On Scroll)
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true
+        });
+
+        // Alpine.js Component
+        function vipHub() {
+            return {
+                // Data - Indian Personalities
+                vipData: [
+                    {
+                        id: 1,
+                        name: "Narendra Modi",
+                        category: "Political Leaders",
+                        profession: "Prime Minister of India",
+                        description: "14th Prime Minister of India since 2014, former Chief Minister of Gujarat. Known for economic reforms, digital initiatives, and international diplomacy. Leader of the Bharatiya Janata Party (BJP).",
+                        achievements: ["Prime Minister since 2014", "Digital India Initiative", "Swachh Bharat Mission", "International Yoga Day Recognition"],
+                        birthYear: 1950,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 2,
+                        name: "Amitabh Bachchan",
+                        category: "Actors/Actresses",
+                        profession: "Actor & Film Producer",
+                        description: "Legendary Bollywood actor often referred to as the 'Shahenshah of Bollywood' and 'Big B'. With a career spanning over five decades, he has appeared in over 200 films and is considered one of the greatest actors in Indian cinema.",
+                        achievements: ["Padma Vibhushan", "4 National Film Awards", "Dadasaheb Phalke Award", "Knight Commander of the Order of Arts and Letters"],
+                        birthYear: 1942,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 3,
+                        name: "A.P.J. Abdul Kalam",
+                        category: "Influential Teachers",
+                        profession: "Former President & Scientist",
+                        description: "11th President of India (2002-2007), aerospace scientist, and author known as the 'Missile Man of India' and 'People's President'. He played a pivotal role in India's nuclear weapons program and space missions.",
+                        achievements: ["Bharat Ratna", "Missile Man of India", "President of India", "Author of 'Wings of Fire'"],
+                        birthYear: 1931,
+                        nationality: "Indian",
+                        status: "Historical Figure"
+                    },
+                    {
+                        id: 4,
+                        name: "Priyanka Chopra",
+                        category: "Actors/Actresses",
+                        profession: "Actress & Global Icon",
+                        description: "Former Miss World, Bollywood actress, and Hollywood star. She has successfully transitioned from Indian cinema to international projects and is a UNICEF Goodwill Ambassador.",
+                        achievements: ["Miss World 2000", "Padma Shri", "UNICEF Goodwill Ambassador", "Hollywood Success with Quantico"],
+                        birthYear: 1982,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 5,
+                        name: "Nirmala Sitharaman",
+                        category: "Government Officers",
+                        profession: "Finance Minister of India",
+                        description: "Current Finance Minister and Corporate Affairs Minister of India. She is the first full-time female Finance Minister of India and has been instrumental in major economic reforms.",
+                        achievements: ["First Female Finance Minister", "Economic Reforms Leader", "Former Defence Minister", "Forbes Most Powerful Women"],
+                        birthYear: 1959,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 6,
+                        name: "Ratan Tata",
+                        category: "Business Leaders",
+                        profession: "Industrialist & Philanthropist",
+                        description: "Former Chairman of Tata Sons and Tata Group. Under his leadership, the Tata Group expanded globally and he is known for his philanthropic work and ethical business practices.",
+                        achievements: ["Padma Vibhushan", "Global Business Leader", "Philanthropist", "Tata Group Expansion"],
+                        birthYear: 1937,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 7,
+                        name: "Shah Rukh Khan",
+                        category: "Actors/Actresses",
+                        profession: "Actor & Film Producer",
+                        description: "Known as the 'King of Bollywood', he has appeared in more than 80 films and earned numerous accolades. He is one of the most successful film stars in the world with a global fan following.",
+                        achievements: ["Padma Shri", "14 Filmfare Awards", "King of Bollywood", "Global Icon"],
+                        birthYear: 1965,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 8,
+                        name: "Indira Gandhi",
+                        category: "Political Leaders",
+                        profession: "Former Prime Minister",
+                        description: "First and only female Prime Minister of India, serving from 1966 to 1977 and 1980 to 1984. Known for her strong leadership during challenging times and significant political reforms.",
+                        achievements: ["First Female Prime Minister", "Bangladesh Liberation War", "Green Revolution", "Emergency Period Leader"],
+                        birthYear: 1917,
+                        nationality: "Indian",
+                        status: "Historical Figure"
+                    },
+                    {
+                        id: 9,
+                        name: "Mukesh Ambani",
+                        category: "Business Leaders",
+                        profession: "Chairman of Reliance Industries",
+                        description: "Chairman and largest shareholder of Reliance Industries Limited, one of India's most valuable companies. He is consistently ranked among the richest people in Asia and has revolutionized Indian telecommunications with Jio.",
+                        achievements: ["Richest Person in India", "Reliance Industries Chairman", "Jio Revolution", "Forbes Billionaire"],
+                        birthYear: 1957,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 10,
+                        name: "Kiran Bedi",
+                        category: "Government Officers",
+                        profession: "Former IPS Officer & Social Activist",
+                        description: "First female Indian Police Service officer and social activist. Known for her prison reforms, traffic management, and anti-corruption measures. Former Lieutenant Governor of Puducherry.",
+                        achievements: ["First Female IPS Officer", "Magsaysay Award Winner", "Prison Reforms Pioneer", "Anti-Corruption Crusader"],
+                        birthYear: 1949,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 11,
+                        name: "Homi Bhabha",
+                        category: "Influential Teachers",
+                        profession: "Nuclear Physicist",
+                        description: "Nuclear physicist known as the 'Father of Indian Nuclear Programme'. He founded the Tata Institute of Fundamental Research and played a key role in the development of nuclear energy in India.",
+                        achievements: ["Father of Indian Nuclear Programme", "Founded TIFR", "Padma Bhushan", "Nuclear Energy Pioneer"],
+                        birthYear: 1909,
+                        nationality: "Indian",
+                        status: "Historical Figure"
+                    },
+                    {
+                        id: 12,
+                        name: "Virat Kohli",
+                        category: "Influencers",
+                        profession: "Cricketer & Sports Icon",
+                        description: "Former captain of the Indian national cricket team and one of the best batsmen in the world. Known for his aggressive batting style and fitness regime, he has numerous records to his name.",
+                        achievements: ["Former Indian Cricket Captain", "Padma Shri", "ICC Cricketer of the Year", "Fitness Icon"],
+                        birthYear: 1988,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 13,
+                        name: "Lata Mangeshkar",
+                        category: "Influencers",
+                        profession: "Playback Singer",
+                        description: "Legendary playback singer known as the 'Nightingale of India'. She recorded songs in over 36 Indian languages and is considered one of the greatest singers in Indian cinema history.",
+                        achievements: ["Bharat Ratna", "Nightingale of India", "Dadasaheb Phalke Award", "Over 25,000 Songs"],
+                        birthYear: 1929,
+                        nationality: "Indian",
+                        status: "Historical Figure"
+                    },
+                    {
+                        id: 14,
+                        name: "Deepika Padukone",
+                        category: "Actors/Actresses",
+                        profession: "Actress & Mental Health Advocate",
+                        description: "One of the highest-paid actresses in India, known for her versatile performances in Bollywood films. She is also a mental health advocate and founded the Live Love Laugh Foundation.",
+                        achievements: ["Padma Shri", "Mental Health Advocate", "Highest-Paid Actress", "Live Love Laugh Foundation"],
+                        birthYear: 1986,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 15,
+                        name: "Mahatma Gandhi",
+                        category: "Political Leaders",
+                        profession: "Freedom Fighter & Social Reformer",
+                        description: "Leader of the Indian independence movement against British rule. Known for his philosophy of non-violent resistance (Satyagraha), he inspired civil rights movements worldwide and is called the 'Father of the Nation'.",
+                        achievements: ["Father of the Nation", "Non-Violence Philosophy", "Indian Independence Leader", "Global Peace Icon"],
+                        birthYear: 1869,
+                        nationality: "Indian",
+                        status: "Historical Figure"
+                    },
+                    {
+                        id: 16,
+                        name: "Sundar Pichai",
+                        category: "Business Leaders",
+                        profession: "CEO of Google & Alphabet",
+                        description: "Indian-American business executive who is the CEO of Alphabet Inc. and Google. He has been instrumental in the development of Google Chrome, Android, and Google Drive.",
+                        achievements: ["CEO of Google & Alphabet", "Padma Bhushan", "Chrome Browser Creator", "Global Tech Leader"],
+                        birthYear: 1972,
+                        nationality: "Indian-American",
+                        status: "Active"
+                    },
+                    {
+                        id: 17,
+                        name: "Saina Nehwal",
+                        category: "Influencers",
+                        profession: "Badminton Player",
+                        description: "Former world no. 1 badminton player and Olympic bronze medalist. She is the first Indian woman to win an Olympic medal in badminton and has inspired a generation of Indian athletes.",
+                        achievements: ["Olympic Bronze Medalist", "Former World No. 1", "Padma Bhushan", "Commonwealth Games Gold"],
+                        birthYear: 1990,
+                        nationality: "Indian",
+                        status: "Active"
+                    },
+                    {
+                        id: 18,
+                        name: "Rajinikanth",
+                        category: "Actors/Actresses",
+                        profession: "Actor & Cultural Icon",
+                        description: "Legendary Tamil actor known as 'Thalaivar' and 'Superstar'. With a career spanning over four decades, he is known for his unique style and has a cult following across South India and beyond.",
+                        achievements: ["Padma Vibhushan", "Dadasaheb Phalke Award", "Cultural Icon", "Superstar of South India"],
+                        birthYear: 1950,
+                        nationality: "Indian",
+                        status: "Active"
+                    }
+                ],
+                
+                // State
+                searchQuery: '',
+                selectedCategory: '',
+                selectedStatus: '',
+                selectedNationality: '',
+                filteredData: [],
+                showModal: false,
+                selectedPerson: null,
+                viewMode: 'grid',
+                showAnalytics: false,
+                showNotification: false,
+                notificationMessage: '',
+                showInstallPrompt: false,
+                darkMode: false,
+                
+                // Computed Properties
+                get categories() {
+                    return [...new Set(this.vipData.map(person => person.category))];
+                },
+                
+                get nationalities() {
+                    return [...new Set(this.vipData.map(person => person.nationality))].sort();
+                },
+                
+                get activeCount() {
+                    return this.vipData.filter(person => person.status === 'Active').length;
+                },
+                
+                get categoryStats() {
+                    const stats = {};
+                    this.vipData.forEach(person => {
+                        stats[person.category] = (stats[person.category] || 0) + 1;
+                    });
+                    return stats;
+                },
+                
+                // Methods
+                init() {
+                    this.filteredData = [...this.vipData];
+                    this.checkPWAInstall();
+                    this.initCharts();
+                },
+                
+                applyFilters() {
+                    this.filteredData = this.vipData.filter(person => {
+                        const matchesSearch = !this.searchQuery || 
+                            person.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                            person.profession.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                            person.category.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                            person.description.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                            person.achievements.some(achievement => 
+                                achievement.toLowerCase().includes(this.searchQuery.toLowerCase())
+                            );
+
+                        const matchesCategory = !this.selectedCategory || person.category === this.selectedCategory;
+                        const matchesStatus = !this.selectedStatus || person.status === this.selectedStatus;
+                        const matchesNationality = !this.selectedNationality || person.nationality === this.selectedNationality;
+
+                        return matchesSearch && matchesCategory && matchesStatus && matchesNationality;
+                    });
+                },
+                
+                clearFilters() {
+                    this.searchQuery = '';
+                    this.selectedCategory = '';
+                    this.selectedStatus = '';
+                    this.selectedNationality = '';
+                    this.filteredData = [...this.vipData];
+                },
+                
+                filterByCategory(category) {
+                    this.selectedCategory = category;
+                    this.applyFilters();
+                },
+                
+                openModal(person) {
+                    this.selectedPerson = person;
+                    this.showModal = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeModal() {
+                    this.showModal = false;
+                    this.selectedPerson = null;
+                    document.body.style.overflow = 'auto';
+                },
+                
+                highlightText(text) {
+                    if (!this.searchQuery) return text;
+                    const regex = new RegExp(`(${this.searchQuery})`, 'gi');
+                    return text.replace(regex, '<span class="search-highlight">$1</span>');
+                },
+                
+                getCategoryColor(category) {
+                    const colors = {
+                        'Political Leaders': 'bg-blue-100 text-blue-800',
+                        'Government Officers': 'bg-green-100 text-green-800',
+                        'Influential Teachers': 'bg-purple-100 text-purple-800',
+                        'Actors/Actresses': 'bg-pink-100 text-pink-800',
+                        'Influencers': 'bg-yellow-100 text-yellow-800',
+                        'Business Leaders': 'bg-indigo-100 text-indigo-800'
+                    };
+                    return colors[category] || 'bg-gray-100 text-gray-800';
+                },
+                
+                getCategoryIcon(category) {
+                    const icons = {
+                        'Political Leaders': '🏛️',
+                        'Government Officers': '🏢',
+                        'Influential Teachers': '📚',
+                        'Actors/Actresses': '🎭',
+                        'Influencers': '⭐',
+                        'Business Leaders': '💼'
+                    };
+                    return icons[category] || '👤';
+                },
+                
+                exportData() {
+                    const dataStr = JSON.stringify(this.filteredData, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'indian-vip-profiles.json';
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    this.showNotificationMessage('Data exported successfully!');
+                },
+                
+                shareProfile(person) {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: `${person.name} - Indian VIP Profile`,
+                            text: `Check out ${person.name}'s profile: ${person.description}`,
+                            url: window.location.href
+                        });
+                    } else {
+                        navigator.clipboard.writeText(`${person.name} - ${person.profession}: ${person.description}`);
+                        this.showNotificationMessage('Profile copied to clipboard!');
+                    }
+                },
+                
+                addToFavorites(person) {
+                    // In a real app, this would save to localStorage or a database
+                    this.showNotificationMessage(`${person.name} added to favorites!`);
+                },
+                
+                showNotificationMessage(message) {
+                    this.notificationMessage = message;
+                    this.showNotification = true;
+                    setTimeout(() => {
+                        this.showNotification = false;
+                    }, 3000);
+                },
+                
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    // In a real app, this would apply dark mode styles
+                    this.showNotificationMessage(this.darkMode ? 'Dark mode enabled' : 'Light mode enabled');
+                },
+                
+                checkPWAInstall() {
+                    // Check if app can be installed as PWA
+                    if ('serviceWorker' in navigator) {
+                        this.showInstallPrompt = true;
+                    }
+                },
+                
+                installPWA() {
+                    this.showNotificationMessage('PWA installation initiated!');
+                    this.showInstallPrompt = false;
+                },
+                
+                initCharts() {
+                    this.$nextTick(() => {
+                        if (this.showAnalytics) {
+                            this.createCategoryChart();
+                            this.createStatusChart();
+                        }
+                    });
+                },
+                
+                createCategoryChart() {
+                    const ctx = document.getElementById('categoryChart');
+                    if (!ctx) return;
+                    
+                    const categoryData = this.categories.map(category => 
+                        this.vipData.filter(person => person.category === category).length
+                    );
+                    
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: this.categories,
+                            datasets: [{
+                                data: categoryData,
+                                backgroundColor: [
+                                    '#3B82F6', '#10B981', '#8B5CF6', 
+                                    '#EC4899', '#F59E0B', '#6366F1'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                },
+                
+                createStatusChart() {
+                    const ctx = document.getElementById('statusChart');
+                    if (!ctx) return;
+                    
+                    const activeCount = this.vipData.filter(p => p.status === 'Active').length;
+                    const historicalCount = this.vipData.filter(p => p.status === 'Historical Figure').length;
+                    
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Active', 'Historical'],
+                            datasets: [{
+                                label: 'Number of Profiles',
+                                data: [activeCount, historicalCount],
+                                backgroundColor: ['#10B981', '#6B7280']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9793d4b7e532fdf7',t:'MTc1Njg4NzY1OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
